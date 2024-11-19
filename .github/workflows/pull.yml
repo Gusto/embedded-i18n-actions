@@ -3,6 +3,16 @@ run-name: Pull from Lokalise [${{ github.event_name == 'workflow_dispatch' && gi
 
 on:
   workflow_dispatch:
+    inputs:
+      lokalise_token:
+        description: 'Lokalise API token'
+        required: true
+      lokalise_project_id:
+        description: 'Lokalise project ID'
+        required: true
+      github_token:
+        description: 'GitHub token of the consuming project'
+        required: true
 
 jobs:
   retrieve-i18n:
@@ -25,16 +35,16 @@ jobs:
 
       - name: Pull translations from Lokalise
         env:
-          VAR_LOKALISE_API_TOKEN: ${{ secrets.LOKALISE_TOKEN }}
-          VAR_LOKALISE_PROJECT_ID: ${{ vars.LOKALISE_PROJECT_ID }}
+          LOKALISE_API_TOKEN: ${{ github.event.inputs.lokalise_token }}
+          LOKALISE_PROJECT_ID: ${{ github.event.inputs.lokalise_project_id }}
         run: |
-             ./bin/lokalise2 --token ${{ env.VAR_LOKALISE_API_TOKEN }} --project-id ${{ env.VAR_LOKALISE_PROJECT_ID }} file download --format yml --filter-langs=es_US --original-filenames=true --export-empty-as=skip --directory-prefix=/
+             ./bin/lokalise2 --token ${{ env.LOKALISE_API_TOKEN }} --project-id ${{ env.LOKALISE_PROJECT_ID }} file download --format yml --filter-langs=es_US --original-filenames=true --export-empty-as=skip --directory-prefix=/ --filter-data reviewed
 
       - name: Creates PR
         id: cpr
         uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ github.event.inputs.github_token }}
           commit-message: '[Lokalise] New translation available'
           committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           author: ${{ github.actor }} <${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com>
