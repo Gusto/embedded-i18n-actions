@@ -4,9 +4,6 @@ run-name: Push to Lokalise [${{ github.ref_name }}] ${{ github.event.after }}
 on:
   workflow_dispatch:
     inputs:
-      lokalise_token:
-        description: 'Lokalise API token'
-        required: true
       lokalise_project_id:
         description: 'Lokalise project ID'
         required: true
@@ -32,7 +29,7 @@ jobs:
         env:
           GITHUB_PREVIOUS_COMMIT: ${{ github.event.after }}
           GITHUB_CURRENT_COMMIT: ${{ github.event.before }}
-          LOKALISE_API_TOKEN: ${{ github.event.inputs.lokalise_token }}
+          LOKALISE_API_TOKEN: ${{ secrets.LOKALISE_API_TOKEN }}
           LOKALISE_PROJECT_ID: ${{ github.event.inputs.lokalise_project_id }}
           ENV_LOKALISE_SOURCE_LANG_ISO: en
         run: |

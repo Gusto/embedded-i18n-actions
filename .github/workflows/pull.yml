@@ -4,14 +4,8 @@ run-name: Pull from Lokalise [${{ github.event_name == 'workflow_dispatch' && gi
 on:
   workflow_dispatch:
     inputs:
-      lokalise_token:
-        description: 'Lokalise API token'
-        required: true
       lokalise_project_id:
         description: 'Lokalise project ID'
-        required: true
-      github_token:
-        description: 'GitHub token of the consuming project'
         required: true
 
 jobs:
@@ -35,7 +29,7 @@ jobs:
 
       - name: Pull translations from Lokalise
         env:
-          LOKALISE_API_TOKEN: ${{ github.event.inputs.lokalise_token }}
+          LOKALISE_API_TOKEN: ${{ secrets.LOKALISE_API_TOKEN }}
           LOKALISE_PROJECT_ID: ${{ github.event.inputs.lokalise_project_id }}
         run: |
              ./bin/lokalise2 --token ${{ env.LOKALISE_API_TOKEN }} --project-id ${{ env.LOKALISE_PROJECT_ID }} file download --format yml --filter-langs=es_US --original-filenames=true --export-empty-as=skip --directory-prefix=/ --filter-data reviewed
@@ -44,7 +38,7 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ github.event.inputs.github_token }}
+          token: ${{ secrets.GH_TOKEN }}
           commit-message: '[Lokalise] New translation available'
           committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           author: ${{ github.actor }} <${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com>
