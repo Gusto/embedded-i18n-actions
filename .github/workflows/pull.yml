@@ -5,26 +5,31 @@ on:
   workflow_dispatch:
 
 jobs:
-  retrieve-18n:
+  retrieve-i18n:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Configure git
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
+
       - name: Lokalise CLI
         run: |
           curl -sfL https://raw.githubusercontent.com/lokalise/lokalise-cli-2-go/master/install.sh | sh
+
       - name: Pull translations from Lokalise
-        env: 
+        env:
           VAR_LOKALISE_API_TOKEN: ${{ secrets.LOKALISE_TOKEN }}
           VAR_LOKALISE_PROJECT_ID: ${{ vars.LOKALISE_PROJECT_ID }}
         run: |
              ./bin/lokalise2 --token ${{ env.VAR_LOKALISE_API_TOKEN }} --project-id ${{ env.VAR_LOKALISE_PROJECT_ID }} file download --format yml --filter-langs=es_US --original-filenames=true --export-empty-as=skip --directory-prefix=/
+
       - name: Creates PR
         id: cpr
         uses: peter-evans/create-pull-request@v7
