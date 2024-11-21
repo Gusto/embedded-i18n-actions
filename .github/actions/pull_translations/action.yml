@@ -1,4 +1,4 @@
-name: 'Lokalise Pull Action'
+name: 'Pull Translations'
 description: 'Pulls translations from Lokalise and creates a PR with the updates'
 
 inputs:

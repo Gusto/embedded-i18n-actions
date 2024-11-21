@@ -1,4 +1,4 @@
-name: 'Lokalise Push Action'
+name: 'Push Translation Sources'
 description: 'Pushes source language files to Lokalise'
 
 inputs:
