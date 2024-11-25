@@ -5,6 +5,9 @@ inputs:
   lokalise_project_id:
     description: 'Lokalise project ID'
     required: true
+  lokalise_api_token:
+    description: 'Lokalise API token'
+    required: true
 
 runs:
   using: 'composite'
@@ -18,7 +21,7 @@ runs:
       env:
         GITHUB_PREVIOUS_COMMIT: ${{ github.event.after }}
         GITHUB_CURRENT_COMMIT: ${{ github.event.before }}
-        LOKALISE_API_TOKEN: ${{ secrets.LOKALISE_API_TOKEN }}
+        LOKALISE_API_TOKEN: ${{ inputs.lokalise_api_token }}
         LOKALISE_PROJECT_ID: ${{ inputs.lokalise_project_id }}
         ENV_LOKALISE_SOURCE_LANG_ISO: en
       run: |
