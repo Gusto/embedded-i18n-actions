@@ -7,6 +7,9 @@ This action pushes the english source files defined in the `config/locales` dire
 - `lokalise_project_id`: Your Lokalise project ID (can be found in your Lokalise project settings). This can be stored as a Github variable in your repository settings.
 - `lokalise_api_token`: The Lokalise API token used to authenticate with Lokalise. This should be stored as a Github secret in your repository settings.
 
+And accepts the following optional inputs:
+- `file_patterns`: The file names of your english sources in the `config/locales` directory. Defaults to `'**en.yml **en.json'`.
+
 To use this action in your repository, set up a Github Action [workflow](https://docs.github.com/en/actions/writing-workflows/about-workflows#about-workflows) in your `.github/workflows` directory similar to the following YAML:
 
 ```
