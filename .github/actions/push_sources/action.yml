@@ -45,9 +45,9 @@ runs:
 
         # Convert space-separated patterns to array and build git command arguments
         patterns=(${{ inputs.file_patterns }})
-        git_patterns=""
+        git_file_patterns=""
         for pattern in "${patterns[@]}"; do
-          git_patterns+="'$pattern' "
+          git_file_patterns+="'$pattern' "
         done
 
         while read file
@@ -68,7 +68,7 @@ runs:
         done < <(
         if [ -z ${{ env.GITHUB_CURRENT_COMMIT }} ]
         then
-          git ls-files -- $git_patterns
+          git ls-files -- $git_file_patterns
         else
-          git diff --name-only ${{ env.GITHUB_PREVIOUS_COMMIT }} ${{ env.GITHUB_CURRENT_COMMIT }} -- $git_patterns
+          git diff --name-only ${{ env.GITHUB_PREVIOUS_COMMIT }} ${{ env.GITHUB_CURRENT_COMMIT }} -- $git_file_patterns
         fi | awk NF)
