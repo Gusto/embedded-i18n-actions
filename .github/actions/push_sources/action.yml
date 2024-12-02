@@ -8,12 +8,26 @@ inputs:
   lokalise_api_token:
     description: 'Lokalise API token'
     required: true
+  file_patterns:
+    description: 'Source file patterns to match (space-separated)'
+    required: false
+    default: '**en.yml **en.json'
 
 runs:
   using: 'composite'
   steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Validate source path
+      shell: bash
+      run: |
+        if [ ! -d "config/locales" ]; then
+          echo "Directory config/locales not found!"
+          exit 1
+        fi
 
     - name: Lokalise CLI
       shell: bash
@@ -26,18 +40,35 @@ runs:
         GITHUB_CURRENT_COMMIT: ${{ github.event.before }}
         LOKALISE_API_TOKEN: ${{ inputs.lokalise_api_token }}
         LOKALISE_PROJECT_ID: ${{ inputs.lokalise_project_id }}
-        ENV_LOKALISE_SOURCE_LANG_ISO: en
       run: |
-            while read file 
-            do 
-              if [ -f $file ]
-              then
-                ./bin/lokalise2 --token ${{ env.LOKALISE_API_TOKEN }} --project-id ${{ env.LOKALISE_PROJECT_ID }} file upload --file="${file}" --lang-iso ${{ env.ENV_LOKALISE_SOURCE_LANG_ISO }} --replace-modified --include-path --use-automations=true --cleanup-mode --poll-timeout 120s
-              fi
-            done < <(
-            if [ -z ${{ env.GITHUB_CURRENT_COMMIT }} ]
-            then
-            git ls-files -- '**${{ env.ENV_LOKALISE_SOURCE_LANG_ISO }}.yml' '**${{ env.ENV_LOKALISE_SOURCE_LANG_ISO }}.json'
-            else
-            git diff --name-only ${{ env.GITHUB_PREVIOUS_COMMIT }} ${{ env.GITHUB_CURRENT_COMMIT }} -- '**${{ env.ENV_LOKALISE_SOURCE_LANG_ISO }}.yml' '**${{ env.ENV_LOKALISE_SOURCE_LANG_ISO }}.json'
-            fi | awk NF)
+        cd config/locales
+
+        # Convert space-separated patterns to array and build git command arguments
+        patterns=(${{ inputs.file_patterns }})
+        git_file_patterns=""
+        for pattern in "${patterns[@]}"; do
+          git_file_patterns+="'$pattern' "
+        done
+
+        while read file
+        do
+          if [ -f $file ]
+          then
+            echo "Processing file: $file"
+            ./bin/lokalise2 --token ${{ env.LOKALISE_API_TOKEN }} \
+            --project-id ${{ env.LOKALISE_PROJECT_ID }} \
+            file upload --file="${file}" \
+            --lang-iso en \
+            --replace-modified \
+            --include-path \
+            --use-automations=true \
+            --cleanup-mode \
+            --poll-timeout 120s
+          fi
+        done < <(
+        if [ -z ${{ env.GITHUB_CURRENT_COMMIT }} ]
+        then
+          git ls-files -- $git_file_patterns
+        else
+          git diff --name-only ${{ env.GITHUB_PREVIOUS_COMMIT }} ${{ env.GITHUB_CURRENT_COMMIT }} -- $git_file_patterns
+        fi | awk NF)
