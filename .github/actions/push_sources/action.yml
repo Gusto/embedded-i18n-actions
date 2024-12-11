@@ -61,7 +61,7 @@ runs:
             --lang-iso en \
             --replace-modified \
             --include-path \
-            --use-automations=true \
+            --apply-tm \
             --cleanup-mode \
             --poll-timeout 120s
           fi
