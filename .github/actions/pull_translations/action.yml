@@ -46,6 +46,9 @@ runs:
         --filter-data reviewed \
         --yaml-include-root
 
+        # lets make sure to remove the executable before commiting
+        rm bin/lokalise2
+
     - name: Creates PR
       uses: peter-evans/create-pull-request@v7
       with:
