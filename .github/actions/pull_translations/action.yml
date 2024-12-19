@@ -35,7 +35,16 @@ runs:
         LOKALISE_API_TOKEN: ${{ inputs.lokalise_api_token }}
         LOKALISE_PROJECT_ID: ${{ inputs.lokalise_project_id }}
       run: |
-        ./bin/lokalise2 --token ${{ env.LOKALISE_API_TOKEN }} --project-id ${{ env.LOKALISE_PROJECT_ID }} file download --format yml --filter-langs=es_US --original-filenames=true --export-empty-as=skip --directory-prefix=/ --filter-data reviewed
+        ./bin/lokalise2 --token ${{ env.LOKALISE_API_TOKEN }} \
+        --project-id ${{ env.LOKALISE_PROJECT_ID }} \
+        file download \
+        --format yml \
+        --filter-langs=es_US \
+        --original-filenames=true \
+        --export-empty-as=skip \
+        --directory-prefix=/ \
+        --filter-data reviewed \
+        --yaml-include-root
 
     - name: Creates PR
       uses: peter-evans/create-pull-request@v7
