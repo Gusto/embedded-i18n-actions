@@ -11,7 +11,7 @@ inputs:
   file_patterns:
     description: 'Source file patterns to match (space-separated)'
     required: false
-    default: '**en.yml **en.json'
+    default: '**.yml **.json'
 
 runs:
   using: 'composite'
@@ -40,15 +40,9 @@ runs:
         GITHUB_CURRENT_COMMIT: ${{ github.event.before }}
         LOKALISE_API_TOKEN: ${{ inputs.lokalise_api_token }}
         LOKALISE_PROJECT_ID: ${{ inputs.lokalise_project_id }}
+        FILE_PATTERNS: ${{ inputs.file_patterns }}
       run: |
         cd config/locales
-
-        # Convert space-separated patterns to array and build git command arguments
-        patterns=(${{ inputs.file_patterns }})
-        git_file_patterns=""
-        for pattern in "${patterns[@]}"; do
-          git_file_patterns+="'$pattern' "
-        done
 
         while read file
         do
@@ -68,7 +62,7 @@ runs:
         done < <(
         if [ -z ${{ env.GITHUB_CURRENT_COMMIT }} ]
         then
-          git ls-files -- $git_file_patterns
+          git ls-files -- ${{ env.FILE_PATTERNS }}
         else
-          git diff --name-only ${{ env.GITHUB_PREVIOUS_COMMIT }} ${{ env.GITHUB_CURRENT_COMMIT }} -- $git_file_patterns
+          git diff --name-only ${{ env.GITHUB_PREVIOUS_COMMIT }} ${{ env.GITHUB_CURRENT_COMMIT }} -- ${{ env.FILE_PATTERNS }}
         fi | awk NF)
