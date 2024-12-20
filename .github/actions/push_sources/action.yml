@@ -49,7 +49,7 @@ runs:
           if [ -f $file ]
           then
             echo "Processing file: $file"
-            ./bin/lokalise2 --token ${{ env.LOKALISE_API_TOKEN }} \
+            ./../../bin/lokalise2 --token ${{ env.LOKALISE_API_TOKEN }} \
             --project-id ${{ env.LOKALISE_PROJECT_ID }} \
             file upload --file="${file}" \
             --lang-iso en \

@@ -45,6 +45,11 @@ runs:
         --directory-prefix=/ \
         --filter-data reviewed \
         --yaml-include-root
+    
+    - name: Clean up
+      shell: bash
+      run: |
+        rm bin/lokalise2
 
     - name: Creates PR
       uses: peter-evans/create-pull-request@v7
