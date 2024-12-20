@@ -46,9 +46,9 @@ runs:
         --filter-data reviewed \
         --yaml-include-root
     
-    name: Clean up
-    shell: bash
-    run: |
+    - name: Clean up
+      shell: bash
+      run: |
         rm bin/lokalise2
 
     - name: Creates PR
