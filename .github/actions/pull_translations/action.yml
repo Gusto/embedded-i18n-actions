@@ -45,8 +45,10 @@ runs:
         --directory-prefix=/ \
         --filter-data reviewed \
         --yaml-include-root
-
-        # lets make sure to remove the executable before commiting
+    
+    name: Clean up
+    shell: bash
+    run: |
         rm bin/lokalise2
 
     - name: Creates PR
