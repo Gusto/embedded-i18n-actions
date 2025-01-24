@@ -3,9 +3,10 @@ This library exposes custom Github Actions to integrate with Gusto Embedded's i1
 
 ## Usage
 ### Push sources action
-This action pushes the english source files defined in the `config/locales` directory of your repository to Lokalise. It requires the following inputs:
-- `lokalise_project_id`: Your Lokalise project ID (can be found in your Lokalise project settings). This can be stored as a Github variable in your repository settings.
-- `lokalise_api_token`: The Lokalise API token used to authenticate with Lokalise. This should be stored as a Github secret in your repository settings.
+This action pushes to Lokalise the English source files found in the list of `locale_paths` of your repository. It requires the following inputs:
+- `lokalise_project_id`: Your Lokalise project ID (can be found in your Lokalise project settings). This must be stored as a Github variable in your repository settings.
+- `lokalise_api_token`: The Lokalise API token used to authenticate with Lokalise. This must be stored as a Github secret in your repository settings.
+- `locale_paths`: The list of paths that will be used to search for locale files (default: [config/locales])
 
 To use this action in your repository, set up a Github Action [workflow](https://docs.github.com/en/actions/writing-workflows/about-workflows#about-workflows) in your `.github/workflows` directory similar to the following YAML:
 
@@ -24,6 +25,9 @@ jobs:
         with:
           lokalise_project_id: ${{ vars.LOKALISE_PROJECT_ID }}
           lokalise_api_token: ${{ secrets.LOKALISE_API_TOKEN }}
+          locale_paths: |
+            config/locales/en
+            config/locales/awesome/module
 ```
 
 ### Pull translations action

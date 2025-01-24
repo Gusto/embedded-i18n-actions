@@ -8,6 +8,11 @@ inputs:
   lokalise_api_token:
     description: 'Lokalise API token'
     required: true
+  locale_paths:
+    description: 'List of directories containing the locale files that will be synchronized with Lokalise'
+    required: true
+    default: |
+      config/locales
   file_patterns:
     description: 'Source file patterns to match (space-separated)'
     required: false
@@ -21,14 +26,6 @@ runs:
       with:
         fetch-depth: 0
 
-    - name: Validate source path
-      shell: bash
-      run: |
-        if [ ! -d "config/locales" ]; then
-          echo "Directory config/locales not found!"
-          exit 1
-        fi
-
     - name: Lokalise CLI
       shell: bash
       run: curl -sfL https://raw.githubusercontent.com/lokalise/lokalise-cli-2-go/master/install.sh | sh
@@ -41,28 +38,5 @@ runs:
         LOKALISE_API_TOKEN: ${{ inputs.lokalise_api_token }}
         LOKALISE_PROJECT_ID: ${{ inputs.lokalise_project_id }}
         FILE_PATTERNS: ${{ inputs.file_patterns }}
-      run: |
-        cd config/locales
-
-        while read file
-        do
-          if [ -f $file ]
-          then
-            echo "Processing file: $file"
-            ./../../bin/lokalise2 --token ${{ env.LOKALISE_API_TOKEN }} \
-            --project-id ${{ env.LOKALISE_PROJECT_ID }} \
-            file upload --file="${file}" \
-            --lang-iso en \
-            --replace-modified \
-            --include-path \
-            --apply-tm \
-            --cleanup-mode \
-            --poll-timeout 120s
-          fi
-        done < <(
-        if [ -z ${{ env.GITHUB_CURRENT_COMMIT }} ]
-        then
-          git ls-files -- ${{ env.FILE_PATTERNS }}
-        else
-          git diff --name-only ${{ env.GITHUB_PREVIOUS_COMMIT }} ${{ env.GITHUB_CURRENT_COMMIT }} -- ${{ env.FILE_PATTERNS }}
-        fi | awk NF)
+        LOCALE_PATHS: ${{ inputs.locale_paths }}
+      run: ./push_sources.sh
