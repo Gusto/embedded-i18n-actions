@@ -39,4 +39,4 @@ runs:
         LOKALISE_PROJECT_ID: ${{ inputs.lokalise_project_id }}
         FILE_PATTERNS: ${{ inputs.file_patterns }}
         LOCALE_PATHS: ${{ inputs.locale_paths }}
-      run: ./github/actions/push_sources/push_sources.sh
+      run: ./.github/actions/push_sources/push_sources.sh

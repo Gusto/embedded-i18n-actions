@@ -1,0 +1,21 @@
+name: Test Push Sources
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run push sources action
+        uses: ./.github/actions/push_sources
+        with:
+          lokalise_project_id: "123456789"
+          lokalise_api_token: "987654321"
+          locale_paths: |
+            test/config/locales
+        env:
+          DRY_RUN: true
