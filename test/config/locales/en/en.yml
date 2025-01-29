@@ -1,0 +1,10 @@
+en:
+  app:
+    home_screen:
+      header: "Welcome, stranger!"
+      title: "This is a demo test"
+      description: "Awesome description"
+    side_bar:
+      menu: "Menu"
+      quit: "Quit"
+      profile: "Profile"
