@@ -74,7 +74,7 @@ Note that any new third-party actions must be approved by Security and added to 
 Instead of having to repeat the cycle of `commit -> raise PR -> wait for the build -> debug` countless times, you can
 use `act` to run the test workflow included in this repo.
 
-Just run `act -j test` and see the output directly in your console.
+Just run `act -j test -s LOKALISE_API_TOKEN=123456789` and see the output directly in your console.
 
 If you don't have [act](https://github.com/nektos/act) installed, `brew install act` should be enough.
 
