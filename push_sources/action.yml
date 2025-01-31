@@ -23,8 +23,6 @@ runs:
   steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
 
     - name: Lokalise CLI
       shell: bash
@@ -39,4 +37,7 @@ runs:
         LOKALISE_PROJECT_ID: ${{ inputs.lokalise_project_id }}
         FILE_PATTERNS: ${{ inputs.file_patterns }}
         LOCALE_PATHS: ${{ inputs.locale_paths }}
-      run: ./.github/actions/push_sources/push_sources.sh
+      run: |
+        CMD_PATH="${{ github.action_path }}/push_sources.sh"
+        chmod +x "$CMD_PATH"
+        $CMD_PATH
