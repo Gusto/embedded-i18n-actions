@@ -35,7 +35,8 @@ runs:
         LOKALISE_API_TOKEN: ${{ inputs.lokalise_api_token }}
         LOKALISE_PROJECT_ID: ${{ inputs.lokalise_project_id }}
       run: |
-        ./bin/lokalise2 --token ${{ env.LOKALISE_API_TOKEN }} \
+        cd config/locales
+        ./../../bin/lokalise2 --token ${{ env.LOKALISE_API_TOKEN }} \
         --project-id ${{ env.LOKALISE_PROJECT_ID }} \
         file download \
         --format yml \
@@ -49,6 +50,7 @@ runs:
     - name: Clean up
       shell: bash
       run: |
+        cd ../..
         rm bin/lokalise2
 
     - name: Creates PR
