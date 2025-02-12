@@ -78,6 +78,16 @@ Just run `act -j test -s LOKALISE_API_TOKEN=123456789` and see the output direct
 
 If you don't have [act](https://github.com/nektos/act) installed, `brew install act` should be enough.
 
+### Testing locally in another repo
+
+If another repo is including this GHA in one of their workflows, you can also test locally by running `act` directly in that
+repository and replacing `<path/to/your/local_instance_of_embedded_i18n_actions>` with the full path to your local copy
+of `embedded-i18n-actions`.
+
+```bash
+act -j push-sources -s LOKALISE_API_TOKEN=1234567890 --local-repository "Gusto/embedded-i18n-actions@v2.0.0=<path/to/your/local_instance_of_embedded_i18n_actions>" --env DRY_RUN=true
+```
+
 > [!TIP]
 > If you're seeing the error `Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?`
 > try following the steps [here](https://github.com/abiosoft/colima/blob/main/docs/FAQ.md#cannot-connect-to-the-docker-daemon-at-unixvarrundockersock-is-the-docker-daemon-running)
