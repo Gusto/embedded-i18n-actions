@@ -38,9 +38,6 @@ push_to_lokalise() {
 
 process_files() {
   local dir=$1
-
-  # Navigate to the directory passed as argument
-  pushd "$dir" > /dev/null || exit 1
   echo "== Searching for files in $dir =="
 
   local files
@@ -58,12 +55,12 @@ process_files() {
     echo "No files found"
   else
     while read -r file; do
-      push_to_lokalise "$file"
+      if [[ "$file" == "$dir"* ]]
+      then
+        push_to_lokalise "$file"
+      fi
     done < <(echo "${files[@]}")
   fi
-
-  # Return to the previous directory
-  popd > /dev/null || exit 1
 }
 
 # ===
