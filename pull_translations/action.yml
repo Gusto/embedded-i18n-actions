@@ -44,7 +44,7 @@ runs:
         --export-empty-as=skip \
         --directory-prefix=/ \
         --filter-data reviewed \
-        --indentation 2sp\
+        --indentation 2sp \
         --yaml-include-root
     
     - name: Clean up
