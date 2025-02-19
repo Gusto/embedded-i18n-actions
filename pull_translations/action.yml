@@ -45,6 +45,7 @@ runs:
         --directory-prefix=/ \
         --filter-data reviewed \
         --indentation 2sp \
+        --placeholder-format icu \
         --yaml-include-root
     
     - name: Clean up
