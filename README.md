@@ -72,11 +72,10 @@ Note that any new third-party actions must be approved by Security and added to 
 ## Testing locally
 
 Instead of having to repeat the cycle of `commit -> raise PR -> wait for the build -> debug` countless times, you can
-use `act` to run the test workflow included in this repo.
+use `bin/test` to run the test workflow included in this repo.
 
-Just run `act -j test -s LOKALISE_API_TOKEN=123456789` and see the output directly in your console.
-
-If you don't have [act](https://github.com/nektos/act) installed, `brew install act` should be enough.
+> [!NOTE]
+> `bin/test` requires [act](https://github.com/nektos/act). If you don't have it installed, `brew install act` should be enough.
 
 ### Testing locally in another repo
 
