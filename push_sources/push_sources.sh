@@ -33,7 +33,7 @@ push_to_lokalise() {
   --include-path \
   --apply-tm \
   --cleanup-mode \
-  --convert-placeholders false \
+  --convert-placeholders=false \
   --poll-timeout 120s
 }
 
