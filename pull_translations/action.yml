@@ -46,6 +46,7 @@ runs:
         --filter-data reviewed \
         --indentation 2sp \
         --placeholder-format icu \
+        --replace-breaks=false \
         --yaml-include-root
     
     - name: Clean up
