@@ -11,6 +11,10 @@ inputs:
   lokalise_api_token:
     description: 'Lokalise API token'
     required: true
+  file_format:
+    description: 'Format in which the files will be downloaded from Lokalise (e.g. ruby_yml, yml, json, etc)'
+    required: false
+    default: 'ruby_yml'
 
 runs:
   using: 'composite'
@@ -38,7 +42,7 @@ runs:
         ./bin/lokalise2 --token ${{ env.LOKALISE_API_TOKEN }} \
         --project-id ${{ env.LOKALISE_PROJECT_ID }} \
         file download \
-        --format yml \
+        --format ${{ inputs.file_format }} \
         --filter-langs=es_US \
         --original-filenames=true \
         --export-empty-as=skip \
@@ -46,6 +50,7 @@ runs:
         --filter-data reviewed \
         --indentation 2sp \
         --placeholder-format icu \
+        --replace-breaks=false \
         --yaml-include-root
     
     - name: Clean up
