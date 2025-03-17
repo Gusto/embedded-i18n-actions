@@ -34,6 +34,7 @@ push_to_lokalise() {
   --apply-tm \
   --cleanup-mode \
   --convert-placeholders=false \
+  --distinguish-by-file=true \
   --poll-timeout 120s
 }
 
