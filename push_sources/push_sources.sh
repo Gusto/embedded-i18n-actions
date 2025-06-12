@@ -8,6 +8,9 @@ LOKALISE_CLI_PATH="${ROOT_DIR}/bin/lokalise2"
 # that way git commands parse each pattern correctly as a separate argument.
 IFS=' ' read -ra FILE_PATTERNS <<< "$FILE_PATTERNS"
 
+# Set default value for DRY_RUN if not provided
+DRY_RUN="${DRY_RUN:-false}"
+
 echo "ROOT_DIR: $ROOT_DIR"
 echo "DRY_RUN: $DRY_RUN"
 echo "GITHUB_PREVIOUS_COMMIT: ${GITHUB_PREVIOUS_COMMIT:-'not set'}"
