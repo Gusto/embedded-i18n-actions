@@ -1,0 +1,40 @@
+name: 'Reusable Manual Translations Check'
+
+on:
+  workflow_call:
+    inputs:
+      file_patterns:
+        description: |
+          A multi-line string of file patterns to check for manual edits to protected translation files.
+          One glob/regex pattern per line.
+        type: string
+        required: false
+        default: '**/es_US.yml'
+
+jobs:
+  validate-files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for manual translation edits
+        run: |
+          base_ref="${{ github.event.pull_request.base.sha }}"
+          changed_files=$(git diff --name-only "$base_ref" HEAD)
+
+          echo "Files changed in this PR:"
+          echo "$changed_files"
+          echo "---"
+          echo "Checking against translation file patterns:"
+          echo "${{ inputs.file_patterns }}"
+          echo "---"
+
+          if echo "$changed_files" | grep -qE -f <(echo "${{ inputs.file_patterns }}"); then
+            echo "::error title=Manual Translation Edit Detected::A direct edit to a translation file was detected. Please ensure all i18n edits are made to *en* files only, and use the i18n pipeline to trigger translations of English keys."
+            exit 1
+          else
+            echo "No direct edits to protected translation files found. Check passed."
+          fi
