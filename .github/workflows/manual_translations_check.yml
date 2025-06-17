@@ -14,27 +14,69 @@ on:
 jobs:
   validate-files:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write # Required to comment on PRs to alert devs of workflow failure
     steps:
+      # Block validation steps if the PR is a legitimate Lokalise translation PR.
+      - name: Check for lokalise-translation label
+        id: label_check
+        run: |
+          should_run="true"
+          skip_label="lokalise-translation"
+          # The GH context contains the PR's labels as a JSON array.
+          labels_json='${{ toJSON(github.event.pull_request.labels) }}'
+
+          echo "Checking for skip label: '$skip_label'"
+
+          # jq parses the JSON and see if any label name matches.
+          if [[ -n "$skip_label" ]] && echo "$labels_json" | jq -e '.[] | select(.name=="'"$skip_label"'")' > /dev/null; then
+            echo "✅ PR is a legitimate Lokalise translation PR ('$skip_label'). Skipping validation."
+            should_run="false"
+          else
+            echo "PR does not have the "$skip_label" label. Proceeding with validation."
+          fi
+          echo "should_run=$should_run" >> $GITHUB_OUTPUT
+
       - name: Checkout code
+        if: steps.label_check.outputs.should_run == 'true'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Check for manual translation edits
+      - name: Validate for manual translation edits
+        if: steps.label_check.outputs.should_run == 'true'
+        id: validator
         run: |
+          is_valid="true"
           base_ref="${{ github.event.pull_request.base.sha }}"
           changed_files=$(git diff --name-only "$base_ref" HEAD)
 
-          echo "Files changed in this PR:"
-          echo "$changed_files"
-          echo "---"
-          echo "Checking against translation file patterns:"
-          echo "${{ inputs.file_patterns }}"
-          echo "---"
-
           if echo "$changed_files" | grep -qE -f <(echo "${{ inputs.file_patterns }}"); then
-            echo "::error title=Manual Translation Edit Detected::A direct edit to a translation file was detected. Please ensure all i18n edits are made to *en* files only, and use the i18n pipeline to trigger translations of English keys."
-            exit 1
+            echo "Files changed in this PR:"
+            echo "$changed_files"
+            echo "---"
+            echo "Checking against translation file patterns:"
+            echo "${{ inputs.file_patterns }}"
+            echo "---"
+            echo "Validation failed: Found manual translation edits to protected files."
+            is_valid="false"
           else
-            echo "No direct edits to protected translation files found. Check passed."
+            echo "Validation passed: no edits to protected translation files found."
           fi
+          echo "is_valid=$is_valid" >> $GITHUB_OUTPUT
+
+      - name: Comment on PR
+        if: steps.validator.outputs.is_valid == 'false'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### ❌ Manual Translation Detected on Protected Files
+
+            This pull request includes direct modifications to protected translation files. To ensure translation consistency, please make all internationalization changes using the designated i18n pipeline. Refer to our [I18n Guidelines and Best Practices](https://gustohq.atlassian.net/wiki/spaces/GWS/pages/221971216/I18n+Guidelines+and+Best+Practices) for more information on how to trigger translations.
+
+            **Action Required:** Please revert the changes to these protected files to merge this PR. This check must pass before the PR can be merged.
+
+      - name: Fail the Workflow
+        if: steps.validator.outputs.is_valid == 'false'
+        run: exit 1
