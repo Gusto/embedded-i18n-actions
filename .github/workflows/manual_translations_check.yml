@@ -13,28 +13,18 @@ on:
 
 jobs:
   validate-files:
+    # Only run this job if the 'lokalise-translation' label is NOT present.
+    if: "! contains(github.event.pull_request.labels.*.name, 'lokalise-translation')"
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write # Required to comment on PRs to alert devs of workflow failure
     steps:
-      # Block validation steps if the PR is a legitimate Lokalise translation PR.
-      - name: Set 'should_run' flag based on lokalise-translation label
-        id: label_check
-        run: |
-          if contains(github.event.pull_request.labels.*.name, 'lokalise-translation'); then
-            echo "should_run=false" >> $GITHUB_OUTPUT
-          else
-            echo "should_run=true" >> $GITHUB_OUTPUT
-          fi
-
       - name: Checkout code
-        if: steps.label_check.outputs.should_run == 'true'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Validate for manual translation edits
-        if: steps.label_check.outputs.should_run == 'true'
         id: validator
         run: |
           is_valid="true"
