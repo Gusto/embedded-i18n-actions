@@ -18,24 +18,14 @@ jobs:
       pull-requests: write # Required to comment on PRs to alert devs of workflow failure
     steps:
       # Block validation steps if the PR is a legitimate Lokalise translation PR.
-      - name: Check for lokalise-translation label
+      - name: Set 'should_run' flag based on lokalise-translation label
         id: label_check
         run: |
-          should_run="true"
-          skip_label="lokalise-translation"
-          # The GH context contains the PR's labels as a JSON array.
-          labels_json='${{ toJSON(github.event.pull_request.labels) }}'
-
-          echo "Checking for skip label: '$skip_label'"
-
-          # jq parses the JSON and see if any label name matches.
-          if [[ -n "$skip_label" ]] && echo "$labels_json" | jq -e '.[] | select(.name=="'"$skip_label"'")' > /dev/null; then
-            echo "✅ PR is a legitimate Lokalise translation PR ('$skip_label'). Skipping validation."
-            should_run="false"
+          if contains(github.event.pull_request.labels.*.name, 'lokalise-translation'); then
+            echo "should_run=false" >> $GITHUB_OUTPUT
           else
-            echo "PR does not have the "$skip_label" label. Proceeding with validation."
+            echo "should_run=true" >> $GITHUB_OUTPUT
           fi
-          echo "should_run=$should_run" >> $GITHUB_OUTPUT
 
       - name: Checkout code
         if: steps.label_check.outputs.should_run == 'true'
