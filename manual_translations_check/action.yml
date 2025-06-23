@@ -1,0 +1,72 @@
+name: 'Manual Translations Check'
+description: 'Checks PRs for manual edits to protected translation files.'
+
+inputs:
+  file_patterns:
+    description: |
+      A multi-line string of file patterns to check for manual edits to protected translation files.
+      One glob/regex pattern per line.
+    type: string
+    required: false
+    default: '**/es_US.yml'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Check for lokalise-translation label
+      id: label_check
+      shell: bash
+      run: |
+        # Check if the 'lokalise-translation' label is present
+        if echo '${{ toJson(github.event.pull_request.labels.*.name) }}' | grep -q 'lokalise-translation'; then
+          echo "skip_validation=true" >> $GITHUB_OUTPUT
+          echo "Skipping validation: lokalise-translation label found"
+        else
+          echo "skip_validation=false" >> $GITHUB_OUTPUT
+          echo "Proceeding with validation: no lokalise-translation label found"
+        fi
+
+    - name: Validate for manual translation edits
+      if: steps.label_check.outputs.skip_validation == 'false'
+      id: validator
+      shell: bash
+      run: |
+        is_valid="true"
+        base_ref="${{ github.event.pull_request.base.sha }}"
+        changed_files=$(git diff --name-only "$base_ref" HEAD)
+
+        if echo "$changed_files" | grep -qE -f <(echo "${{ inputs.file_patterns }}"); then
+          echo "Files changed in this PR:"
+          echo "$changed_files"
+          echo "---"
+          echo "Checking against translation file patterns:"
+          echo "${{ inputs.file_patterns }}"
+          echo "---"
+          echo "Validation failed: Found manual translation edits to protected files."
+          is_valid="false"
+        else
+          echo "Validation passed: no edits to protected translation files found."
+        fi
+        echo "is_valid=$is_valid" >> $GITHUB_OUTPUT
+
+    - name: Comment on PR
+      if: steps.label_check.outputs.skip_validation == 'false' && steps.validator.outputs.is_valid == 'false'
+      uses: peter-evans/create-or-update-comment@v4
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+          ### ❌ Manual Translation Detected on Protected Files
+
+          This pull request includes direct modifications to protected translation files. To ensure translation consistency, please make all internationalization changes using the designated i18n pipeline. Refer to our [I18n Guidelines and Best Practices](https://gustohq.atlassian.net/wiki/spaces/GWS/pages/221971216/I18n+Guidelines+and+Best+Practices) for more information on how to trigger translations.
+
+          **Action Required:** Please revert the changes to these protected files to merge this PR. This check must pass before the PR can be merged.
+
+    - name: Fail the Workflow
+      if: steps.label_check.outputs.skip_validation == 'false' && steps.validator.outputs.is_valid == 'false'
+      shell: bash
+      run: exit 1
