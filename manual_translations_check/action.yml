@@ -4,11 +4,15 @@ description: 'Checks PRs for manual edits to protected translation files.'
 inputs:
   file_patterns:
     description: |
-      A multi-line string of file patterns to check for manual edits to protected translation files.
-      One glob/regex pattern per line.
+      File patterns to check for manual edits to protected translation files.
+      Supports glob patterns. One pattern per line.
+      Examples:
+        config/locales/es_US/**       (matches all files in es_US directory)
+        **/es_US/*.yml                (matches .yml files in any es_US directory)
+        config/locales/*/es_US.yml    (matches es_US.yml in any locale subdirectory)
     type: string
     required: false
-    default: '**/es_US.yml'
+    default: 'config/locales/es_US/**'
 
 runs:
   using: 'composite'
@@ -38,9 +42,12 @@ runs:
       run: |
         is_valid="true"
         base_ref="${{ github.event.pull_request.base.sha }}"
-        changed_files=$(git diff --name-only "$base_ref" HEAD)
+        changed_files=$(git diff --name-only "$base_ref".."${{ github.event.pull_request.head.sha }}")
 
-        if echo "$changed_files" | grep -qE -f <(echo "${{ inputs.file_patterns }}"); then
+        # Convert glob patterns to regex patterns
+        regex_patterns=$(echo "${{ inputs.file_patterns }}" | sed 's|\*\*|.*|g')
+
+        if echo "$changed_files" | grep -qE "$regex_patterns"; then
           echo "Files changed in this PR:"
           echo "$changed_files"
           echo "---"
