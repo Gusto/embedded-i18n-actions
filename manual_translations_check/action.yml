@@ -5,11 +5,17 @@ inputs:
   file_patterns:
     description: |
       File patterns to check for manual edits to protected translation files.
-      Supports glob patterns. One pattern per line.
+      Uses glob patterns (converted to regex internally). One pattern per line.
+      
+      Supported patterns:
+        **              - matches any directories/subdirectories
+        *               - matches any filename characters (converted to [^/]* for exact matching)
+        literal paths   - matches exact paths
+      
       Examples:
-        config/locales/es_US/**       (matches all files in es_US directory)
-        **/es_US/*.yml                (matches .yml files in any es_US directory)
-        config/locales/*/es_US.yml    (matches es_US.yml in any locale subdirectory)
+        config/locales/es_US/**           # matches all files in es_US directory
+        config/locales/**/es_US.yml       # matches es_US.yml in any subdirectory  
+        **/locales/es_US/**              # matches es_US directories anywhere
     type: string
     required: false
     default: 'config/locales/es_US/**'
@@ -45,7 +51,7 @@ runs:
         changed_files=$(git diff --name-only "$base_ref".."${{ github.event.pull_request.head.sha }}")
 
         # Convert glob patterns to regex patterns
-        regex_patterns=$(echo "${{ inputs.file_patterns }}" | sed 's|\*\*|.*|g')
+        regex_patterns=$(echo "${{ inputs.file_patterns }}" | sed 's|\*\*|.*|g' | sed 's|\*|[^/]*|g')
 
         if echo "$changed_files" | grep -qE "$regex_patterns"; then
           echo "Files changed in this PR:"
