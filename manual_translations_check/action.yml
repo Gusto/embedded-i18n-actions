@@ -8,8 +8,8 @@ inputs:
       Uses glob patterns (converted to regex internally). One pattern per line.
       
       Supported patterns:
-        **              - matches any directories/subdirectories
-        *               - matches any filename characters (converted to [^/]* for exact matching)
+        **              - matches any directories/subdirectories (converted to .*)
+        *               - matches any directories/subdirectories (converted to .*)
         literal paths   - matches exact paths
       
       Examples:
@@ -18,7 +18,7 @@ inputs:
         **/locales/es_US/**              # matches es_US directories anywhere
     type: string
     required: false
-    default: '**/config/locales/es_US/**'
+    default: 'config/locales/es_US/**'
 
 runs:
   using: 'composite'
@@ -62,16 +62,15 @@ runs:
           changed_files=$(git diff --name-only "$base_ref".."$head_ref")
         fi
 
-        # Convert glob patterns to regex patterns
+        # Convert glob patterns to regex patterns for nested path matching
         # Both * and ** are converted to .* for path-based matching
-        #   - Matches any characters including directory separators (/)
-        #   - Allows flexible matching across directory structures
-        #   - Example: **/config/locales/es_US/**
-        #     → .*/config/locales/es_US/.*
+        # Patterns are automatically prefixed with .* to match anywhere in the path
+        #   - Example: config/locales/es_US/**
+        #     → .*config/locales/es_US/.*
         #     → matches: /workspace/gws-flows/config/locales/es_US/employee.yml
-        #     → matches: /workspace/zenpayroll/packs/.../config/locales/es_US/la/la.yml
+        #     → matches: /workspace/zenpayroll/packs/.../config/locales/es_US/la/la.yml  
         #     → matches: /workspace/zenpayroll/config/locales/es_US/api/models/benefits.yml
-        regex_patterns=$(echo "${{ inputs.file_patterns }}" | sed 's|\*|.*|g')
+        regex_patterns=$(echo "${{ inputs.file_patterns }}" | sed 's|\*|.*|g' | sed 's|^|.*|')
 
         if echo "$changed_files" | grep -qE "$regex_patterns"; then
           echo "Files changed in this PR:"
@@ -88,7 +87,7 @@ runs:
         echo "is_valid=$is_valid" >> $GITHUB_OUTPUT
 
     - name: Comment on PR
-      if: steps.label_check.outputs.skip_validation == 'false' && steps.validator.outputs.is_valid == 'false'
+      if: steps.label_check.outputs.skip_validation == 'false' && steps.validator.outputs.is_valid == 'false' && github.event.pull_request.number
       uses: peter-evans/create-or-update-comment@v4.0.0
       with:
         issue-number: ${{ github.event.pull_request.number }}

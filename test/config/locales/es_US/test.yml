@@ -1,3 +1,3 @@
 es_US:
   test:
-    message: "This is a test translation file" 
+    message: "This is a test translation file and my GHA should fail"
