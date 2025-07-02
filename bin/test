@@ -1,3 +1,6 @@
 #!/bin/bash
-echo "Running GitHub Actions test with act..."
+echo "Running Push sources GHA test with act..."
 act -j test -s LOKALISE_API_TOKEN=123456789
+
+echo "Running manual translations GHA test with act..."
+act -j test-manual-translations -s -P ubuntu-latest=node:16-buster

@@ -18,7 +18,7 @@ inputs:
         **/locales/es_US/**              # matches es_US directories anywhere
     type: string
     required: false
-    default: 'config/locales/es_US/**'
+    default: '**/config/locales/es_US/**'
 
 runs:
   using: 'composite'
@@ -33,7 +33,11 @@ runs:
       shell: bash
       run: |
         # Check if the 'lokalise-translation' label is present
-        if echo '${{ toJson(github.event.pull_request.labels.*.name) }}' | grep -q 'lokalise-translation'; then
+        labels='${{ toJson(github.event.pull_request.labels.*.name) }}'
+        if [ -z "$labels" ] || [ "$labels" = "null" ]; then
+          echo "No PR context found (likely running locally). Proceeding with validation."
+          echo "skip_validation=false" >> $GITHUB_OUTPUT
+        elif echo "$labels" | grep -q 'lokalise-translation'; then
           echo "skip_validation=true" >> $GITHUB_OUTPUT
           echo "Skipping validation: lokalise-translation label found"
         else
@@ -48,10 +52,26 @@ runs:
       run: |
         is_valid="true"
         base_ref="${{ github.event.pull_request.base.sha }}"
-        changed_files=$(git diff --name-only "$base_ref".."${{ github.event.pull_request.head.sha }}")
+        head_ref="${{ github.event.pull_request.head.sha }}"
+
+        # Handle local testing with act - use HEAD~1..HEAD as fallback
+        if [ -z "$base_ref" ] || [ -z "$head_ref" ]; then
+          echo "No PR context found (likely running locally). Using HEAD~1..HEAD for testing."
+          changed_files=$(git diff --name-only HEAD~1..HEAD 2>/dev/null || echo "")
+        else
+          changed_files=$(git diff --name-only "$base_ref".."$head_ref")
+        fi
 
         # Convert glob patterns to regex patterns
-        regex_patterns=$(echo "${{ inputs.file_patterns }}" | sed 's|\*\*|.*|g' | sed 's|\*|[^/]*|g')
+        # Both * and ** are converted to .* for path-based matching
+        #   - Matches any characters including directory separators (/)
+        #   - Allows flexible matching across directory structures
+        #   - Example: **/config/locales/es_US/**
+        #     → .*/config/locales/es_US/.*
+        #     → matches: /workspace/gws-flows/config/locales/es_US/employee.yml
+        #     → matches: /workspace/zenpayroll/packs/.../config/locales/es_US/la/la.yml
+        #     → matches: /workspace/zenpayroll/config/locales/es_US/api/models/benefits.yml
+        regex_patterns=$(echo "${{ inputs.file_patterns }}" | sed 's|\*|.*|g')
 
         if echo "$changed_files" | grep -qE "$regex_patterns"; then
           echo "Files changed in this PR:"
