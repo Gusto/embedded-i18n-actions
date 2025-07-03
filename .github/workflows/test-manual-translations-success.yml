@@ -1,8 +1,6 @@
 name: Test Manual Translations Success Case
 
 on:
-  pull_request:
-    types: [opened, synchronize]
   workflow_dispatch:
 
 jobs:

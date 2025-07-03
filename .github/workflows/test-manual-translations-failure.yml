@@ -1,8 +1,7 @@
 name: Test Manual Translations Failure Case
 
 on:
-  pull_request:
-    types: [opened, synchronize]
+  workflow_dispatch:
 
 jobs:
   test-manual-translations-failure:

@@ -23,7 +23,7 @@ echo "----------------------------------------------"
 echo "# Test modification $(date)" >> test/config/locales/en/en.yml
 echo "Committing test modification to en file..."
 git add test/config/locales/en/en.yml && git commit -m "Test: modify en file"
-act pull_request \
+act workflow_dispatch \
   -W .github/workflows/test-manual-translations-success.yml \
   -e .github/workflows/test-event-no-label.json \
   -P ubuntu-latest=catthehacker/ubuntu:act-latest \
@@ -46,7 +46,7 @@ echo "----------------------------------------------"
 echo "# Test modification $(date)" >> test/config/locales/es_US/test.yml
 echo "Committing test modification to es_US file..."
 git add test/config/locales/es_US/test.yml && git commit -m "Test: modify es_US file"
-act pull_request \
+act workflow_dispatch \
   -W .github/workflows/test-manual-translations-failure.yml \
   -e .github/workflows/test-event-no-label.json \
   -P ubuntu-latest=catthehacker/ubuntu:act-latest \
