@@ -1,0 +1,25 @@
+name: Test Manual Translations Success Case
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  workflow_dispatch:
+
+jobs:
+  test-manual-translations-success:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Test manual translations check
+        uses: ./manual_translations_check
+        with:
+          file_patterns: |
+            config/locales/es_US/**
+            test/config/locales/es_US/**

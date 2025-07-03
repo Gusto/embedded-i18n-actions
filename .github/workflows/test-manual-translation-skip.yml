@@ -1,0 +1,21 @@
+name: Test Manual Translations Check Skip Case
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-manual-translations-skip:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Test manual translations check
+        uses: ./manual_translations_check
+        with:
+          file_patterns: |
+            config/locales/es_US/**
+            test/config/locales/es_US/**

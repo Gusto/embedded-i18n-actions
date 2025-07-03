@@ -1,0 +1,19 @@
+{
+  "pull_request": {
+    "number": 125,
+    "base": {
+      "sha": "origin/main"
+    },
+    "head": {
+      "sha": "HEAD"
+    },
+    "labels": [
+      {
+        "name": "lokalise-translation"
+      },
+      {
+        "name": "enhancement"
+      }
+    ]
+  }
+}

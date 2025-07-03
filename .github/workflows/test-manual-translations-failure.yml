@@ -1,10 +1,11 @@
-name: Test Manual Translations Check
+name: Test Manual Translations Failure Case
 
 on:
-  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize]
 
 jobs:
-  test-manual-translations:
+  test-manual-translations-failure:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -12,6 +13,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Test manual translations check
         uses: ./manual_translations_check
