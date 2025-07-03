@@ -19,5 +19,4 @@ jobs:
         uses: ./manual_translations_check
         with:
           file_patterns: |
-            config/locales/es_US/**
-            test/config/locales/es_US/**
+            **/es_US/**
