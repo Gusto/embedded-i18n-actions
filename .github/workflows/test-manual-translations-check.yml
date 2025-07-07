@@ -1,10 +1,10 @@
-name: Test Manual Translations Failure Case
+name: Test Manual Translations Check
 
 on:
   workflow_dispatch:
 
 jobs:
-  test-manual-translations-failure:
+  test-manual-translations-check:
     runs-on: ubuntu-latest
     permissions:
       contents: read
