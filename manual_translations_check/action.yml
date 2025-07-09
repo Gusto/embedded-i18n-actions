@@ -19,6 +19,11 @@ inputs:
     type: string
     required: false
     default: 'config/locales/es_US/**'
+  dry_run:
+    description: 'If true, skips PR comments and workflow failures for testing purposes'
+    type: string
+    required: false
+    default: 'false'
 
 runs:
   using: 'composite'
@@ -75,7 +80,7 @@ runs:
         echo "is_valid=$is_valid" >> $GITHUB_OUTPUT
 
     - name: Comment on PR
-      if: steps.label_check.outputs.skip_validation == 'false' && steps.validator.outputs.is_valid == 'false' && github.event.pull_request.number
+      if: steps.label_check.outputs.skip_validation == 'false' && steps.validator.outputs.is_valid == 'false' && github.event.pull_request.number && inputs.dry_run != 'true'
       uses: peter-evans/create-or-update-comment@v4.0.0
       with:
         issue-number: ${{ github.event.pull_request.number }}
@@ -87,6 +92,6 @@ runs:
           **Action Required:** Please revert the changes to these protected files to merge this PR. This check must pass before the PR can be merged.
 
     - name: Fail the Workflow
-      if: steps.label_check.outputs.skip_validation == 'false' && steps.validator.outputs.is_valid == 'false'
+      if: steps.label_check.outputs.skip_validation == 'false' && steps.validator.outputs.is_valid == 'false' && inputs.dry_run != 'true'
       shell: bash
       run: exit 1
