@@ -41,7 +41,17 @@ echo "----------------------------------------------"
 echo "# Test modification $(date)" >> test/config/locales/es_US/test.yml
 echo "Committing test modification to es_US file..."
 git add test/config/locales/es_US/test.yml && git commit -m "Test: modify es_US file"
-act -j test-manual-translations-check -e .github/workflows/test-event-no-label.json
+
+# Capture output to check for is_valid=false
+OUTPUT=$(act -j test-manual-translations-check -e .github/workflows/test-event-no-label.json 2>&1)
+
+# Check if validation correctly detected the failure
+if echo "$OUTPUT" | grep -q "::set-output:: is_valid=false"; then
+    echo "✅ Test 3 PASSED: Workflow correctly detected manual translation edits (is_valid=false)"
+else
+    echo "❌ Test 3 FAILED: Workflow should have detected manual translation edits but didn't"
+    echo "Output: $OUTPUT"
+fi
 
 # Clean up: return to original branch and delete temp branch
 echo ""
