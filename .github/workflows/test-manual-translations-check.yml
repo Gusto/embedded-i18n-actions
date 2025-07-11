@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test-manual-translations:
+  test-manual-translations-check:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Test manual translations check
         uses: ./manual_translations_check
@@ -19,3 +21,4 @@ jobs:
           file_patterns: |
             config/locales/es_US/**
             test/config/locales/es_US/**
+          dry_run: 'true'

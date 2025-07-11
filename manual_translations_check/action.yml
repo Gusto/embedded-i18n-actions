@@ -19,6 +19,11 @@ inputs:
     type: string
     required: false
     default: 'config/locales/es_US/**'
+  dry_run:
+    description: 'If true, skips PR comments and workflow failures for testing purposes'
+    type: string
+    required: false
+    default: 'false'
 
 runs:
   using: 'composite'
@@ -33,11 +38,7 @@ runs:
       shell: bash
       run: |
         # Check if the 'lokalise-translation' label is present
-        labels='${{ toJson(github.event.pull_request.labels.*.name) }}'
-        if [ -z "$labels" ] || [ "$labels" = "null" ]; then
-          echo "No PR context found (likely running locally). Proceeding with validation."
-          echo "skip_validation=false" >> $GITHUB_OUTPUT
-        elif echo "$labels" | grep -q 'lokalise-translation'; then
+        if echo '${{ toJson(github.event.pull_request.labels.*.name) }}' | grep -q 'lokalise-translation'; then
           echo "skip_validation=true" >> $GITHUB_OUTPUT
           echo "Skipping validation: lokalise-translation label found"
         else
@@ -52,15 +53,7 @@ runs:
       run: |
         is_valid="true"
         base_ref="${{ github.event.pull_request.base.sha }}"
-        head_ref="${{ github.event.pull_request.head.sha }}"
-
-        # Handle local testing with act - use HEAD~1..HEAD as fallback
-        if [ -z "$base_ref" ] || [ -z "$head_ref" ]; then
-          echo "No PR context found (likely running locally). Using HEAD~1..HEAD for testing."
-          changed_files=$(git diff --name-only HEAD~1..HEAD 2>/dev/null || echo "")
-        else
-          changed_files=$(git diff --name-only "$base_ref".."$head_ref")
-        fi
+        changed_files=$(git diff --name-only "$base_ref" HEAD)
 
         # Convert glob patterns to regex patterns for nested path matching
         # Both * and ** are converted to .* for path-based matching
@@ -70,7 +63,7 @@ runs:
         #     → matches: /workspace/gws-flows/config/locales/es_US/employee.yml
         #     → matches: /workspace/zenpayroll/packs/.../config/locales/es_US/la/la.yml  
         #     → matches: /workspace/zenpayroll/config/locales/es_US/api/models/benefits.yml
-        regex_patterns=$(echo "${{ inputs.file_patterns }}" | sed 's|\*|.*|g' | sed 's|^|.*|')
+        regex_patterns=$(echo "${{ inputs.file_patterns }}" | grep -v '^$' | sed 's|\*|.*|g' | sed 's|^|.*|')
 
         if echo "$changed_files" | grep -qE "$regex_patterns"; then
           echo "Files changed in this PR:"
@@ -87,7 +80,7 @@ runs:
         echo "is_valid=$is_valid" >> $GITHUB_OUTPUT
 
     - name: Comment on PR
-      if: steps.label_check.outputs.skip_validation == 'false' && steps.validator.outputs.is_valid == 'false' && github.event.pull_request.number
+      if: steps.label_check.outputs.skip_validation == 'false' && steps.validator.outputs.is_valid == 'false' && github.event.pull_request.number && inputs.dry_run != 'true'
       uses: peter-evans/create-or-update-comment@v4.0.0
       with:
         issue-number: ${{ github.event.pull_request.number }}

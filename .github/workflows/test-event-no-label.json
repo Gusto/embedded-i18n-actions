@@ -1,0 +1,16 @@
+{
+  "pull_request": {
+    "number": 123,
+    "base": {
+      "sha": "origin/main"
+    },
+    "head": {
+      "sha": "HEAD"
+    },
+    "labels": [
+      {
+        "name": "enhancement"
+      }
+    ]
+  }
+}
