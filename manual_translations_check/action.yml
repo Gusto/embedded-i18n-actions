@@ -58,10 +58,9 @@ runs:
         base_branch_ref="${{ github.event.pull_request.base.ref }}"
         git fetch origin "$base_branch_ref"
 
-        # Find the common ancestor between the PR's head and the base branch (main)'s head;
-        # this ensures changes introduced after the PR was opened are excluded in the diff
-        merge_base_sha=$(git merge-base "$pr_head_sha" "origin/$base_branch_ref")
-        changed_files=$(git diff --name-only "$merge_base_sha" "$pr_head_sha")
+        # Use three-dot diff to compare from merge-base to PR head
+        # This shows only changes introduced by the PR (equivalent to merge-base comparison)
+        changed_files=$(git diff --name-only "origin/$base_branch_ref"..."$pr_head_sha")
 
         # Convert glob patterns to regex patterns for nested path matching
         # Both * and ** are converted to .* for path-based matching
