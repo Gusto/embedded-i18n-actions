@@ -52,8 +52,15 @@ runs:
       shell: bash
       run: |
         is_valid="true"
-        base_ref="${{ github.event.pull_request.base.sha }}"
-        changed_files=$(git diff --name-only "$base_ref" HEAD)
+        # The SHA of the last commit on the PR's head branch
+        pr_head_sha="${{ github.event.pull_request.head.sha }}"
+        # Fetch latest state of the base branch (e.g., 'main')
+        base_branch_ref="${{ github.event.pull_request.base.ref }}"
+        git fetch origin "$base_branch_ref"
+
+        # Use three-dot diff to compare from merge-base to PR head
+        # This shows only changes introduced by the PR (equivalent to merge-base comparison)
+        changed_files=$(git diff --name-only "origin/$base_branch_ref"..."$pr_head_sha")
 
         # Convert glob patterns to regex patterns for nested path matching
         # Both * and ** are converted to .* for path-based matching
@@ -92,6 +99,7 @@ runs:
 
           **Action Required:**
           Please remove changes to protected files before merging.
+          Reach out to #emb-api-infrastructure if you have any questions.
 
           For more information on how to trigger translations, see our [I18n Guidelines](https://gustohq.atlassian.net/wiki/spaces/GWS/pages/221971216/I18n+Guidelines+and+Best+Practices).
 
