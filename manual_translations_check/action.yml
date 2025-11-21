@@ -70,7 +70,8 @@ runs:
         #     → matches: /workspace/gws-flows/config/locales/es_US/employee.yml
         #     → matches: /workspace/zenpayroll/packs/.../config/locales/es_US/la/la.yml  
         #     → matches: /workspace/zenpayroll/config/locales/es_US/api/models/benefits.yml
-        regex_patterns=$(echo "${{ inputs.file_patterns }}" | grep -v '^$' | sed 's|\*|.*|g' | sed 's|^|.*|')
+        # Multiple patterns are joined with | for grep -E alternation
+        regex_patterns=$(echo "${{ inputs.file_patterns }}" | grep -v '^$' | sed 's|\*|.*|g' | sed 's|^|.*|' | paste -sd '|' -)
 
         if echo "$changed_files" | grep -qE "$regex_patterns"; then
           echo "Files changed in this PR:"

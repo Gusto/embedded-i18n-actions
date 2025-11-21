@@ -21,4 +21,5 @@ jobs:
           file_patterns: |
             config/locales/es_US/**
             test/config/locales/es_US/**
+            app/locales/es_US/**
           dry_run: 'true'
