@@ -1,0 +1,18 @@
+name: Test Check Locale YAML
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-check-locale-yaml:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run check locale YAML action
+        uses: ./check_locale_yaml
+        with:
+          locale_paths: |
+            test/config/locales/en
+          dry_run: 'true'

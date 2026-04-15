@@ -1,0 +1,12 @@
+---
+en:
+  test:
+    # These values are Lokalise-compatible and should NOT be flagged
+    simple_value: Simple text value
+    quoted_html: "Click <a href='url' target='_blank'>here</a>"
+    double_quoted_attr: Click <a href="url">here</a>
+    block_scalar: |-
+      <h3 class='heading'>Getting Started</h3>
+    interpolation: "%{count} results found"
+    # This value is NOT compatible and SHOULD be detected
+    bad_value: Click <a href='url' target='_blank'>here</a>
