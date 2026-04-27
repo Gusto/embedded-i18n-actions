@@ -1,0 +1,30 @@
+name: 'Check Locale YAML'
+description: 'Validates source locale YAML files for Lokalise compatibility'
+
+inputs:
+  locale_paths:
+    description: 'Directories containing source locale files to validate (one per line)'
+    required: false
+    default: |
+      config/locales/en
+  dry_run:
+    description: 'If true, reports issues but does not fail the workflow'
+    type: string
+    required: false
+    default: 'false'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Check locale YAML compatibility
+      shell: bash
+      env:
+        LOCALE_PATHS: ${{ inputs.locale_paths }}
+        DRY_RUN: ${{ inputs.dry_run }}
+      run: |
+        CMD_PATH="${{ github.action_path }}/check_locale_yaml.sh"
+        chmod +x "$CMD_PATH"
+        $CMD_PATH
