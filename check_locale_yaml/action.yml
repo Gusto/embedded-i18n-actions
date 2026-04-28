@@ -24,7 +24,4 @@ runs:
       env:
         LOCALE_PATHS: ${{ inputs.locale_paths }}
         DRY_RUN: ${{ inputs.dry_run }}
-      run: |
-        CMD_PATH="${{ github.action_path }}/check_locale_yaml.sh"
-        chmod +x "$CMD_PATH"
-        $CMD_PATH
+      run: ruby "${{ github.action_path }}/check_locale_yaml.rb"
