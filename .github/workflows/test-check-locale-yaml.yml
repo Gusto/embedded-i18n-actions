@@ -2,6 +2,13 @@ name: Test Check Locale YAML
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'check_locale_yaml/**'
+      - 'test/config/locales/**'
+      - '.github/workflows/test-check-locale-yaml.yml'
+  push:
+    branches: [main]
 
 jobs:
   test-check-locale-yaml:
