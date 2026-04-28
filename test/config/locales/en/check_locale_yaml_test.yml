@@ -8,5 +8,9 @@ en:
     block_scalar: |-
       <h3 class='heading'>Getting Started</h3>
     interpolation: "%{count} results found"
-    # This value is NOT compatible and SHOULD be detected
+    # These values are NOT compatible and SHOULD be detected
     bad_value: Click <a href='url' target='_blank'>here</a>
+    # Multi-line plain scalar — HTML attr lives on the continuation line.
+    # Caught by AST parsing; line-by-line regex misses it.
+    bad_multiline: <p>Complete this step.</p>
+      <p>See <a href='https://example.com' target='_blank'>here</a>.</p>
