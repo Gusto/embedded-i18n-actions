@@ -1,0 +1,6 @@
+steps:
+  - label: "Test check_locale_yaml"
+    command: .buildkite/test-check-locale-yaml.sh
+    env:
+      LOCALE_PATHS: "test/config/locales/en"
+      DRY_RUN: "true"
