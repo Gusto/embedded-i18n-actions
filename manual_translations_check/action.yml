@@ -67,9 +67,9 @@ runs:
         # Patterns are automatically prefixed with .* to match anywhere in the path
         #   - Example: config/locales/es_US/**
         #     → .*config/locales/es_US/.*
-        #     → matches: /workspace/gws-flows/config/locales/es_US/employee.yml
-        #     → matches: /workspace/zenpayroll/packs/.../config/locales/es_US/la/la.yml  
-        #     → matches: /workspace/zenpayroll/config/locales/es_US/api/models/benefits.yml
+        #     → matches: /workspace/your-repo/config/locales/es_US/employee.yml
+        #     → matches: /workspace/your-repo/packs/some-package/config/locales/es_US/la/la.yml
+        #     → matches: /workspace/your-repo/config/locales/es_US/api/models/benefits.yml
         # Multiple patterns are joined with | for grep -E alternation
         regex_patterns=$(echo "${{ inputs.file_patterns }}" | grep -v '^$' | sed 's|\*|.*|g' | sed 's|^|.*|' | paste -sd '|' -)
 
@@ -100,9 +100,9 @@ runs:
 
           **Action Required:**
           Please remove changes to protected files before merging.
-          Reach out to #emb-devex if you have any questions.
+          Reach out to your i18n/devex team if you have any questions.
 
-          For more information on how to trigger translations, see our [I18n Guidelines](https://gustohq.atlassian.net/wiki/spaces/GWS/pages/221971216/I18n+Guidelines+and+Best+Practices).
+          For more information on how translations are managed, see your organization's i18n documentation.
 
     - name: Fail the Workflow
       if: steps.label_check.outputs.skip_validation == 'false' && steps.validator.outputs.is_valid == 'false'
