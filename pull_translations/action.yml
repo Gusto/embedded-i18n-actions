@@ -30,8 +30,19 @@ runs:
 
     - name: Lokalise CLI
       shell: bash
+      env:
+        LOKALISE_CLI_VERSION: v3.1.7
+        LOKALISE_CLI_INSTALL_SHA256: 191bd19dae6c810153c925a1787167992bf05871099170870572b3d48f006f6a
       run: |
-        curl -sfL https://raw.githubusercontent.com/lokalise/lokalise-cli-2-go/master/install.sh | sh
+        set -euo pipefail
+        # Pin install.sh to an immutable commit SHA (tag v3.1.7) instead of the
+        # mutable `master` branch, and verify its checksum before executing it.
+        curl -sfL "https://raw.githubusercontent.com/lokalise/lokalise-cli-2-go/c5d2ebbcdff43ab1b5e57e2662ab670e491a385a/install.sh" -o install-lokalise-cli.sh
+        echo "${LOKALISE_CLI_INSTALL_SHA256}  install-lokalise-cli.sh" | sha256sum -c -
+        # Pin the downloaded lokalise2 binary to the same release; install.sh
+        # verifies the binary's sha256 against the release's checksums.txt.
+        sh install-lokalise-cli.sh "${LOKALISE_CLI_VERSION}"
+        rm install-lokalise-cli.sh
 
     - name: Pull translations from Lokalise
       shell: bash
