@@ -35,10 +35,20 @@ jobs:
           output=$(ruby check_locale_yaml/check_locale_yaml.rb)
           echo "$output"
 
-          expected=2
+          expected=4
           actual=$(echo "$output" | grep -E "^[0-9]+ Lokalise-incompatible" | grep -oE "^[0-9]+" || echo "0")
           if [ "$actual" != "$expected" ]; then
             echo "::error::Expected $expected violations, got $actual"
             exit 1
           fi
           echo "Detected $expected violations as expected"
+
+          if ! echo "$output" | grep -qE "^-- Plain HTML values with single-quoted attributes \(2\) --$"; then
+            echo "::error::Expected 2 HTML-attribute violations, not found in output"
+            exit 1
+          fi
+          if ! echo "$output" | grep -qE "^-- Non-string mapping keys \(2\) --$"; then
+            echo "::error::Expected 2 non-string-key violations, not found in output"
+            exit 1
+          fi
+          echo "Detected both violation categories as expected"
