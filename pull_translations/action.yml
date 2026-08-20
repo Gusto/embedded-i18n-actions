@@ -48,16 +48,66 @@ runs:
         sh install-lokalise-cli.sh "${LOKALISE_CLI_VERSION}"
         rm install-lokalise-cli.sh
 
-    - name: Pull translations from Lokalise
+    - name: Partition project files by original source format
+      # `file download --format` is a single value applied to every file in
+      # the export, but repos can mix source formats (e.g. mostly .yml with
+      # one .json file). Lokalise preserves each file's real extension in
+      # its own file list, so split filenames into a JSON bucket and an
+      # everything-else bucket, and download each with the format that
+      # actually matches -- otherwise the JSON-sourced file comes back with
+      # a .yml extension and YAML content instead of JSON.
+      id: partition_files
       shell: bash
       env:
         LOKALISE_API_TOKEN: ${{ inputs.lokalise_api_token }}
         LOKALISE_PROJECT_ID: ${{ inputs.lokalise_project_id }}
       run: |
-        ./bin/lokalise2 --token ${{ env.LOKALISE_API_TOKEN }} \
-        --project-id ${{ env.LOKALISE_PROJECT_ID }} \
+        set -euo pipefail
+        file_list=$(./bin/lokalise2 --token "${LOKALISE_API_TOKEN}" --project-id "${LOKALISE_PROJECT_ID}" file list)
+
+        json_filenames=$(echo "$file_list" | jq -r '[.files[] | select(.filename | endswith(".json")) | .filename] | join(",")')
+        other_filenames=$(echo "$file_list" | jq -r '[.files[] | select((.filename | endswith(".json") | not) and .filename != "__unassigned__") | .filename] | join(",")')
+
+        echo "json_filenames=${json_filenames}" >> "$GITHUB_OUTPUT"
+        echo "other_filenames=${other_filenames}" >> "$GITHUB_OUTPUT"
+        echo "Files with a JSON source format: ${json_filenames:-<none>}"
+        echo "Files with a non-JSON source format: ${other_filenames:-<none>}"
+
+    - name: Pull JSON-sourced translations from Lokalise
+      if: steps.partition_files.outputs.json_filenames != ''
+      shell: bash
+      env:
+        LOKALISE_API_TOKEN: ${{ inputs.lokalise_api_token }}
+        LOKALISE_PROJECT_ID: ${{ inputs.lokalise_project_id }}
+        JSON_FILENAMES: ${{ steps.partition_files.outputs.json_filenames }}
+      run: |
+        ./bin/lokalise2 --token "${LOKALISE_API_TOKEN}" \
+        --project-id "${LOKALISE_PROJECT_ID}" \
+        file download \
+        --format json \
+        --filter-filenames="${JSON_FILENAMES}" \
+        --filter-langs=es_US \
+        --original-filenames=true \
+        --export-empty-as=skip \
+        --directory-prefix=/ \
+        --filter-data reviewed \
+        --indentation 2sp \
+        --placeholder-format icu \
+        --replace-breaks=false
+
+    - name: Pull translations from Lokalise
+      if: steps.partition_files.outputs.other_filenames != ''
+      shell: bash
+      env:
+        LOKALISE_API_TOKEN: ${{ inputs.lokalise_api_token }}
+        LOKALISE_PROJECT_ID: ${{ inputs.lokalise_project_id }}
+        OTHER_FILENAMES: ${{ steps.partition_files.outputs.other_filenames }}
+      run: |
+        ./bin/lokalise2 --token "${LOKALISE_API_TOKEN}" \
+        --project-id "${LOKALISE_PROJECT_ID}" \
         file download \
         --format ${{ inputs.file_format }} \
+        --filter-filenames="${OTHER_FILENAMES}" \
         --filter-langs=es_US \
         --original-filenames=true \
         --export-empty-as=skip \
@@ -67,7 +117,7 @@ runs:
         --placeholder-format icu \
         --replace-breaks=false \
         --yaml-include-root
-    
+
     - name: Clean up
       shell: bash
       run: |
