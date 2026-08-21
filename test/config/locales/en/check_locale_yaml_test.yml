@@ -8,9 +8,18 @@ en:
     block_scalar: |-
       <h3 class='heading'>Getting Started</h3>
     interpolation: "%{count} results found"
+    # These keys are Lokalise-compatible and should NOT be flagged
+    quoted_bool_key:
+      "true": Quoted, stays a string
+      "false": Also quoted
     # These values are NOT compatible and SHOULD be detected
     bad_value: Click <a href='url' target='_blank'>here</a>
     # Multi-line plain scalar — HTML attr lives on the continuation line.
     # Caught by AST parsing; line-by-line regex misses it.
     bad_multiline: <p>Complete this step.</p>
       <p>See <a href='https://example.com' target='_blank'>here</a>.</p>
+    # Unquoted true/false/yes/no/on/off/null keys resolve to their literal
+    # type, not a string, unlike every other key in the file.
+    bad_bool_key:
+      true: Parses as boolean true, not string "true"
+      false: Parses as boolean false, not string "false"
