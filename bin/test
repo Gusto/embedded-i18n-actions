@@ -62,6 +62,58 @@ run_unit_test "Deeply nested path" "app/deep/config/locales/es_US/file.yml" "MAT
 echo ""
 
 # ============================================================================
+# PART 1B: Unit Tests for Pull Translations File Partitioning
+# ============================================================================
+echo "════════════════════════════════════════════════════════════════════"
+echo "📝 PART 1B: Unit Tests (Lokalise file list partitioning)"
+echo "════════════════════════════════════════════════════════════════════"
+echo ""
+
+# Same jq expressions used in pull_translations/action.yml's "Partition
+# project files by original source format" step, exercised against sample
+# `lokalise2 file list` output (both a single-page shape and a simulated
+# multi-page shape -- two concatenated JSON documents, one per page).
+JSON_FILTER='[.[].files[]? | select(.filename | endswith(".json")) | .filename] | join(",")'
+OTHER_FILTER='[.[].files[]? | select((.filename | endswith(".json") | not) and .filename != "__unassigned__") | .filename] | join(",")'
+
+run_partition_test() {
+    local test_name=$1
+    local sample_input=$2
+    local filter=$3
+    local expected=$4
+
+    actual=$(echo "$sample_input" | jq -rs "$filter")
+
+    if [ "$actual" = "$expected" ]; then
+        echo "  ✅ PASSED: $test_name"
+        ((TOTAL_PASSED++))
+        return 0
+    else
+        echo "  ❌ FAILED: $test_name (got: '$actual', expected: '$expected')"
+        ((TOTAL_FAILED++))
+        return 1
+    fi
+}
+
+single_page='{"files":[{"filename":"config/locales/%LANG_ISO%/react_sdk/chrome.json"},{"filename":"config/locales/%LANG_ISO%/company.yml"},{"filename":"__unassigned__"}]}'
+
+run_partition_test "Single page: JSON bucket" "$single_page" "$JSON_FILTER" \
+    "config/locales/%LANG_ISO%/react_sdk/chrome.json"
+run_partition_test "Single page: other bucket excludes __unassigned__" "$single_page" "$OTHER_FILTER" \
+    "config/locales/%LANG_ISO%/company.yml"
+
+multi_page=$(printf '%s\n%s\n' \
+    '{"files":[{"filename":"config/locales/%LANG_ISO%/a.json"},{"filename":"config/locales/%LANG_ISO%/b.yml"}]}' \
+    '{"files":[{"filename":"config/locales/%LANG_ISO%/c.json"},{"filename":"config/locales/%LANG_ISO%/d.yml"}]}')
+
+run_partition_test "Multi page (2 docs): JSON bucket merges both pages" "$multi_page" "$JSON_FILTER" \
+    "config/locales/%LANG_ISO%/a.json,config/locales/%LANG_ISO%/c.json"
+run_partition_test "Multi page (2 docs): other bucket merges both pages" "$multi_page" "$OTHER_FILTER" \
+    "config/locales/%LANG_ISO%/b.yml,config/locales/%LANG_ISO%/d.yml"
+
+echo ""
+
+# ============================================================================
 # PART 2: Push Sources Action Test (with act)
 # ============================================================================
 echo "════════════════════════════════════════════════════════════════════"
